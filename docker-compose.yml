@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - ai
+      - feature-store
+      - frontend
+
+  api:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./services/api:/app
+    command: ["node", "src/server.js"]
+
+  ai:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./services/ai:/app
+    command: ["node", "src/server.js"]
+
+  feature-store:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./services/feature-store:/app
+    command: ["node", "src/server.js"]
+
+  frontend:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - ./frontend/dashboard:/app
+    command: ["npm", "run", "dev"]
+
+  redis:
+    image: redis:7
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
